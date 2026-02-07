@@ -1,102 +1,32 @@
-import path from 'path';
 import webpack from 'webpack';
-import HtmlWebPackPlugin from 'html-webpack-plugin';
-
-// From https://stackoverflow.com/a/50052194/132540
-const __dirname = import.meta.dirname;
-
-const isProduction = true;
-
-const ROOT_DIR = path.join(__dirname, '.');
-const DIST_DIR = path.join(ROOT_DIR, 'dist');
 
 const WEBPACK_CONFIG = {
     entry: './index.js',
-    mode: isProduction ? 'production' : 'development',
+    mode: 'production',
     module: {
         rules: [
-            //     {
-            //         test: /\.(js|jsx|mjs)$/,
-            //         use: {
-            //             loader: 'babel-loader',
-            //             options: {
-            //                 // TODO: Would these be more effective than using Terser?
-            //                 compact: false,
-            //                 minified: false,
-            //                 targets: '>0.25% in US and not dead and last 5 versions',
-            //                 presets: [
-            //                     [
-            //                         '@babel/preset-env',
-            //                         // TODO: Assumptions: https://babeljs.io/docs/assumptions
-            //                         {}
-            //                     ],
-            //                     [
-            //                         '@babel/preset-react',
-            //                         {
-            //                             development: !isProduction
-            //                         }
-            //                     ]
-            //                 ],
-            //                 // plugins: [
-            //                 //     [
-            //                 //         // TODO: Also @babel/plugin-transform-object-assign?
-            //                 //         'polyfill-corejs3',
-            //                 //         {
-            //                 //             method: 'entry-global',
-            //                 //             version: require('core-js/package.json').version
-            //                 //         }
-            //                 //     ]
-            //                 // ],
-            //                 // This makes it so that node_modules gets transpiled
-            //                 exclude: []
-            //             }
-            //         }
-            //     },
             {
-                test: /\.(svg)$/i,
+                test: /\.svg/,
                 type: 'asset/resource',
                 generator: {
-                    filename: '[path][name]-[contenthash][ext]'
+                    // Environment: Windows
+
+                    // This one works for me
+                    filename: '[contenthash][ext]'
+                    // The following three patterns all generate a 0 byte file named `virtual`, at least on my machine
+                    // filename: '[name][ext]',
+                    // filename: '[name]-[contenthash][ext]',
+                    // filename: '[path][name]-[contenthash][ext]',
                 }
             }
         ]
     },
-    resolve: {
-        extensions: ['*', '.js', '.jsx']
-    },
-    output: {
-        path: DIST_DIR,
-        publicPath: '/',
-        filename: '[name]-[contenthash].js'
-    },
-    devServer: {
-        historyApiFallback: true,
-        static: DIST_DIR,
-        devMiddleware: {
-            writeToDisk: true
-        },
-        port: 443,
-        server: {
-            type: 'https'
-        }
-    },
-    optimization: {
-        mangleExports: 'size',
-        moduleIds: 'size',
-        minimize: isProduction
-    },
     plugins: [
-        new webpack.DefinePlugin({
-            IS_PRODUCTION: isProduction,
-        }),
-        new HtmlWebPackPlugin({
-            publicPath: './',
-            // inject: true
-        }),
         new webpack.experiments.schemes.VirtualUrlPlugin(
             {
-                type: '.svg',
-                'logo.svg': `<?xml version="1.0" encoding="iso-8859-1"?>
+                'logo.svg': {
+                    type: '.svg',
+                    source: () => `<?xml version="1.0" encoding="iso-8859-1"?>
 <!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
@@ -182,6 +112,7 @@ const WEBPACK_CONFIG = {
 <g>
 </g>
 </svg>`
+                }
             }
         )
     ]
